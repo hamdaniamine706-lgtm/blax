@@ -159,29 +159,6 @@ fi
 HOOK
   chmod 700 /etc/letsencrypt/renewal-hooks/deploy/vpn-script-cert.sh
 }
-configure_tls(){
-  # Separate certificates match the two SNI names. They are self-signed.
-  make_cert "$DOMAIN_443" "$VLESS_CERT"
-  make_cert "$DOMAIN_WS" "$SSH_CERT"
-
-  mkdir -p /etc/stunnel
-  cat >/etc/stunnel/stunnel.conf <<EOF2
-client = no
-foreground = no
-pid = /run/stunnel4/stunnel.pid
-cert = $SSH_CERT
-socket = l:TCP_NODELAY=1
-socket = r:TCP_NODELAY=1
-
-[ssh-tls]
-accept = 127.0.0.1:$SSH_TLS_PORT
-connect = 127.0.0.1:22
-EOF2
-  if [[ -f /etc/default/stunnel4 ]]; then
-    sed -i 's/^ENABLED=.*/ENABLED=1/' /etc/default/stunnel4 || true
-  fi
-}
-
 configure_xray(){
   mkdir -p "$(dirname "$XRAY_CONFIG")"
   cat >"$XRAY_CONFIG" <<EOF2
